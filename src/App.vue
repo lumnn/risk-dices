@@ -126,7 +126,7 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-align: center;
-  max-width: 320px;
+  max-width: 480px;
   font-size: 10vh;
   margin: auto;
 }
