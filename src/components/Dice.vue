@@ -18,6 +18,10 @@ export default {
 
   methods: {
     roll: function () {
+      if (this.roller) {
+        clearInterval(this.roller)
+      }
+
       this.rollingIteration = 0
 
       this.roller = setInterval(() => {
@@ -25,7 +29,10 @@ export default {
         this.rollingIteration++
 
         if (this.rollingIteration > 6) {
-          clearInterval(this.roller)
+          if (this.roller) {
+            clearInterval(this.roller)
+            this.roller = null
+          }
           this.$emit('rolled', this.result)
         }
       }, 100)
