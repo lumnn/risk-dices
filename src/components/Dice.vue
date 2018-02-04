@@ -43,12 +43,12 @@ export default {
 
 <style lang="scss">
   .dice {
+    box-sizing: border-box;
     text-align: center;
-    width: 1em;
-    height: 1em;
-    line-height: 1em;
-    font-size: 1em;
+    width: 1.5em;
+    height: 1.5em;
     padding: .25em;
+    background-color: gray;
     border-radius: .1em;
     color: white;
     cursor: pointer;

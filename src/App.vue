@@ -3,31 +3,43 @@
     <div id="sides">
       <div id="attacker" class="side">
         <div @click="toggleDice('attacker', 1)">
-          <dice ref="attacker1" :class="{ disabled: !isDiceEnabled('attacker', 1) }" style="background: red"></dice>
+          <dice ref="attacker1" :class="{ disabled: !isDiceEnabled('attacker', 1) }"></dice>
         </div>
         <div @click="toggleDice('attacker', 2)">
-          <dice ref="attacker2" :class="{ disabled: !isDiceEnabled('attacker', 2) }" style="background: red"></dice>
+          <dice ref="attacker2" :class="{ disabled: !isDiceEnabled('attacker', 2) }"></dice>
         </div>
         <div @click="toggleDice('attacker', 3)">
-          <dice ref="attacker3" :class="{ disabled: !isDiceEnabled('attacker', 3) }" style="background: red"></dice>
+          <dice ref="attacker3" :class="{ disabled: !isDiceEnabled('attacker', 3) }"></dice>
         </div>
-        <div class="side__loss">{{ loss.attacker }}</div>
+        <div v-if="loss" class="loss">
+          {{ loss.attacker }}
+          <div class="loss__total">{{ totalLoss.attacker }}</div>
+        </div>
       </div>
       <div id="defender" class="side">
         <div @click="toggleDice('defender', 1)">
-          <dice ref="defender1" :class="{ disabled: !isDiceEnabled('defender', 1) }" style="background: blue"></dice>
+          <dice ref="defender1" :class="{ disabled: !isDiceEnabled('defender', 1) }"></dice>
         </div>
         <div @click="toggleDice('defender', 2)">
-          <dice ref="defender2" :class="{ disabled: !isDiceEnabled('defender', 2) }" style="background: blue"></dice>
+          <dice ref="defender2" :class="{ disabled: !isDiceEnabled('defender', 2) }"></dice>
         </div>
         <div @click="toggleDice('defender', 3)">
-          <dice ref="defender3" :class="{ disabled: !isDiceEnabled('defender', 3) }" style="background: blue"></dice>
+          <dice ref="defender3" :class="{ disabled: !isDiceEnabled('defender', 3) }"></dice>
         </div>
-        <div class="side__loss">{{ loss.defender }}</div>
+        <div v-if="loss" class="loss">
+          {{ loss.defender }}
+          <div class="loss__total">{{ totalLoss.defender }}</div>
+        </div>
       </div>
     </div>
 
     <button id="button" @click='roll'>Roll</button>
+
+    <div id="about">
+      <h1>Risk Dices</h1>
+      <a href='https://github.com/lumnn/risk-dices'>Source code</a>
+      <a href='https://github.com/lumnn/risk-dices/issues'>Feedback / Issues</a>
+    </div>
   </div>
 </template>
 
@@ -42,17 +54,26 @@ export default {
 
   data: function () {
     return {
-      attacker: [1, 2, 3],
-      defender: [1, 2, 3],
-      attackerResult: [],
-      defenderResult: []
+      enabled: {
+        attacker: [1, 2, 3],
+        defender: [1, 2, 3]
+      },
+      result: {
+        attacker: [],
+        defender: []
+      },
+      totalLoss: {
+        attacker: 0,
+        defender: 0
+      },
+      resultsRemaining: 0
     }
   },
 
   computed: {
     loss: function () {
-      var attacker = this.attackerResult.slice(0).sort().reverse()
-      var defender = this.defenderResult.slice(0).sort().reverse()
+      var attacker = this.result.attacker.slice(0).sort().reverse()
+      var defender = this.result.defender.slice(0).sort().reverse()
 
       var result = {
         attacker: 0,
@@ -78,47 +99,73 @@ export default {
 
   methods: {
     roll: function () {
-      this.attackerResult = []
-      this.defenderResult = []
+      this.result.attacker = []
+      this.result.defender = []
+      this.resultsRemaining = 0
 
-      for (var i = this.attacker.length - 1; i >= 0; i--) {
-        this.$refs['attacker' + this.attacker[i]].roll()
-        this.$refs['attacker' + this.attacker[i]].$once('rolled', (result) => this.attackerResult.push(result))
+      for (var i = this.enabled.attacker.length - 1; i >= 0; i--) {
+        let ref = 'attacker' + this.enabled.attacker[i]
+
+        this.$refs[ref].$off('rolled')
+        this.$refs[ref].roll()
+        this.resultsRemaining++
+        this.$refs[ref].$once('rolled', (result) => this.onRolled('attacker', result))
       }
-      for (var j = this.defender.length - 1; j >= 0; j--) {
-        this.$refs['defender' + this.defender[j]].roll()
-        this.$refs['defender' + this.defender[j]].$once('rolled', (result) => this.defenderResult.push(result))
+      for (var j = this.enabled.defender.length - 1; j >= 0; j--) {
+        let ref = 'defender' + this.enabled.defender[j]
+
+        this.$refs[ref].$off('rolled')
+        this.$refs[ref].roll()
+        this.resultsRemaining++
+        this.$refs[ref].$once('rolled', (result) => this.onRolled('defender', result))
       }
     },
 
-    isDiceEnabled: function (type, id) {
-      return this[type].indexOf(id) > -1
+    onRolled: function (side, result) {
+      this.result[side].push(result)
+      this.resultsRemaining--
+
+      if (this.resultsRemaining === 0) {
+        this.totalLoss = {
+          attacker: this.totalLoss.attacker + this.loss.attacker,
+          defender: this.totalLoss.defender + this.loss.defender
+        }
+      }
     },
 
-    toggleDice: function (type, id) {
-      var index = this[type].indexOf(id)
+    isDiceEnabled: function (side, id) {
+      return this.enabled[side].indexOf(id) > -1
+    },
+
+    toggleDice: function (side, id) {
+      var index = this.enabled[side].indexOf(id)
 
       if (index === -1) {
-        this[type].push(id)
+        this.enabled[side].push(id)
         return
       }
 
-      if (this[type].length === 1) {
+      if (this.enabled[side].length === 1) {
         return
       }
 
-      this[type].splice(index, 1)
+      this.enabled[side].splice(index, 1)
     }
   }
 }
 </script>
 
 <style lang="scss">
-body {
+html, body {
   background: black;
   color: #fff;
   margin: 0;
   padding: 0;
+  height: 100%;
+}
+
+*, *:before, *:after {
+  box-sizing: border-box;
 }
 
 #app {
@@ -129,38 +176,63 @@ body {
   max-width: 480px;
   font-size: 10vh;
   margin: auto;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  padding: .25em;
 }
 
 #sides {
   display: flex;
-  justify-content: space-around;
+  justify-content: space-between;
 }
 
-.side {
-  &__loss {
-    text-align: center;
-    width: 1em;
-    height: 1em;
-    line-height: 1em;
-    font-size: 1em;
-    padding: .25em;
-    
-    margin: .25em 0;
+.loss {
+  text-align: center;
+  width: 1.5em;
+  padding: .25em;
+  margin-bottom: .25em;
+  position: relative;
+
+  &__total {
+    right: 0;
+    font-size: .5em;
   }
 }
 
 .dice {
-  margin: .25em 0;
+  margin-bottom: .25em;
 
   &.disabled {
     opacity: 0.3;
   }
 }
 
+#attacker {
+  .dice {
+    background: red;
+  }
+
+  .loss {
+    color: red;
+  }
+}
+
+#defender {
+  .dice {
+    background: blue;
+  }
+
+  .loss {
+    color: blue;
+  }
+}
+
 #button {
-  font-size: 1em;
+  flex-grow: 1;
+  font-size: .75em;
   line-height: 1em;
-  padding: .25em;
+  padding: .1em;
   border-radius: .1em;
   width: 100%;
   border: 0;
@@ -168,9 +240,27 @@ body {
   color: #fff;
   display: block;
   margin: auto;
+  outline: 0;
 
   &:active {
     background: darken(green, 10);
+  }
+}
+
+#about {
+  font-size: 2vh;
+  display: flex;
+  justify-content: space-between;
+  padding: 1em 0;
+
+  h1 {
+    font-size: 1em;
+    display: inline-block;
+    margin: 0;
+  }
+
+  a {
+    color: #666;
   }
 }
 </style>
