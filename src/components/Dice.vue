@@ -50,7 +50,6 @@ export default {
     padding: .25em;
     background-color: gray;
     border-radius: .1em;
-    color: white;
     cursor: pointer;
   }
 </style>

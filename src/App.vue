@@ -202,6 +202,7 @@ html, body {
 
 .dice {
   margin-bottom: .25em;
+  color: #000;
 
   &.disabled {
     opacity: 0.3;
@@ -210,21 +211,22 @@ html, body {
 
 #attacker {
   .dice {
-    background: red;
+    transition: .2s ease-out;
+    background: #ee5253;
   }
 
   .loss {
-    color: red;
+    color: #ee5253;
   }
 }
 
 #defender {
   .dice {
-    background: blue;
+    background: #2e86de;
   }
 
   .loss {
-    color: blue;
+    color: #2e86de;
   }
 }
 
@@ -232,18 +234,18 @@ html, body {
   flex-grow: 1;
   font-size: .75em;
   line-height: 1em;
-  padding: .1em;
   border-radius: .1em;
   width: 100%;
   border: 0;
-  background: green;
-  color: #fff;
+  background: #10ac84;
+  color: #000;
+  font-weight: bold;
   display: block;
   margin: auto;
   outline: 0;
 
   &:active {
-    background: darken(green, 10);
+    background: darken(#10ac84, 10);
   }
 }
 
@@ -254,6 +256,8 @@ html, body {
   padding: 1em 0;
 
   h1 {
+    color: #10ac84;
+    font-weight: bold;
     font-size: 1em;
     display: inline-block;
     margin: 0;
